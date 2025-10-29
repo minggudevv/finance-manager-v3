@@ -21,6 +21,17 @@ interface Order {
   note: string | null;
 }
 
+async function sendWA(phone: string | null | undefined, message: string) {
+  if (!phone) return;
+  try {
+    await fetch('/api/notify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phone, message })
+    });
+  } catch {}
+}
+
 export default function OrdersPage() {
   const router = useRouter();
   const [orders, setOrders] = useState<Order[]>([]);
@@ -65,6 +76,15 @@ export default function OrdersPage() {
     toast.success('Pesanan dihapus');
     loadOrders();
   };
+
+  const generateTracking = () => {
+    const prefix = process.env.NEXT_PUBLIC_TRACK_PREFIX || 'FM-';
+    const rand = Math.random().toString(36).slice(2, 8).toUpperCase();
+    const ts = Date.now().toString().slice(-6);
+    return `${prefix}${rand}-${ts}`;
+  };
+
+  
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -141,8 +161,15 @@ export default function OrdersPage() {
 }
 
 function OrderModal({ editing, products, onClose, onSaved }: { editing: Order | null; products: Product[]; onClose: () => void; onSaved: () => void; }) {
-  const [form, setForm] = useState({ product_id: '', quantity: 1, customer_name: '', customer_phone: '', address: '', status: 'pending' as Order['status'], tracking_number: '', note: '' });
+  const [form, setForm] = useState({ product_id: '', quantity: 1, customer_name: '', customer_phone: '', address: '', status: 'pending' as Order['status'], tracking_number: '', note: '', wa_note: '' });
   const [saving, setSaving] = useState(false);
+
+  const genTracking = () => {
+    const prefix = process.env.NEXT_PUBLIC_TRACK_PREFIX || 'FM-';
+    const rand = Math.random().toString(36).slice(2, 8).toUpperCase();
+    const ts = Date.now().toString().slice(-6);
+    return `${prefix}${rand}-${ts}`;
+  };
 
   useEffect(() => {
     if (editing) setForm({
@@ -153,7 +180,8 @@ function OrderModal({ editing, products, onClose, onSaved }: { editing: Order | 
       address: editing.address || '',
       status: editing.status,
       tracking_number: editing.tracking_number || '',
-      note: editing.note || ''
+      note: editing.note || '',
+      wa_note: ''
     });
   }, [editing]);
 
@@ -166,18 +194,29 @@ function OrderModal({ editing, products, onClose, onSaved }: { editing: Order | 
     setSaving(true);
     const user = await getCurrentUser(); if (!user) return;
     try {
+      if (!form.product_id || !form.customer_name) {
+        throw new Error('Produk dan nama pelanggan wajib diisi');
+      }
+      const { wa_note, ...rest } = form;
+      let payload = { ...rest } as any;
+      if (!payload.tracking_number && payload.status === 'dikirim') {
+        payload.tracking_number = genTracking();
+      }
       if (editing) {
-        const { error } = await supabase.from('orders').update({ ...form }).eq('id', editing.id);
+        const { error } = await supabase.from('orders').update(payload).eq('id', editing.id);
         if (error) throw error;
         toast.success('Pesanan diperbarui');
+        await sendWA(form.customer_phone, `Pesanan Anda (${productNameFromId(products, form.product_id)}) status: ${form.status}${payload.tracking_number ? `\nResi: ${payload.tracking_number}` : ''}${wa_note ? `\nCatatan: ${wa_note}` : ''}`);
       } else {
-        const { error } = await supabase.from('orders').insert([{ ...form, user_id: user.id }]);
+        const { error } = await supabase.from('orders').insert([{ ...payload, user_id: user.id }]);
         if (error) throw error;
         toast.success('Pesanan ditambahkan');
+        await sendWA(form.customer_phone, `Terima kasih ${form.customer_name}. Pesanan: ${productNameFromId(products, form.product_id)} x${form.quantity}. Status: ${form.status}${payload.tracking_number ? `\nResi: ${payload.tracking_number}` : ''}${wa_note ? `\nCatatan: ${wa_note}` : ''}`);
       }
       onSaved();
-    } catch {
-      toast.error('Gagal menyimpan');
+      return;
+    } catch (e: any) {
+      toast.error(e?.message || 'Gagal menyimpan');
     } finally {
       setSaving(false);
     }
@@ -198,7 +237,7 @@ function OrderModal({ editing, products, onClose, onSaved }: { editing: Order | 
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">Jumlah</label>
-              <input name="quantity" type="number" value={form.quantity} min={1} onChange={onChange} className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
+              <input name="quantity" type="number" min={1} value={form.quantity} onChange={onChange} className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
             </div>
             <div>
               <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">Status</label>
@@ -221,16 +260,23 @@ function OrderModal({ editing, products, onClose, onSaved }: { editing: Order | 
             </div>
             <div>
               <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">No. Resi</label>
-              <input name="tracking_number" value={form.tracking_number} onChange={onChange} className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
+              <div className="flex gap-2">
+                <input name="tracking_number" value={form.tracking_number} onChange={onChange} className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
+                <button type="button" onClick={() => setForm((prev) => ({ ...prev, tracking_number: genTracking() }))} className="px-3 py-2 text-xs rounded bg-pink-600 text-white hover:bg-pink-700">Generate</button>
+              </div>
             </div>
           </div>
           <div>
             <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">Alamat</label>
-            <textarea name="address" value={form.address || ''} onChange={onChange} className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
+            <textarea name="address" value={form.address} onChange={onChange} className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
           </div>
           <div>
             <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">Catatan</label>
-            <textarea name="note" value={form.note || ''} onChange={onChange} className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
+            <textarea name="note" value={form.note} onChange={onChange} className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
+          </div>
+          <div>
+            <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">Catatan WA (tidak disimpan, hanya dikirim)</label>
+            <textarea name="wa_note" value={form.wa_note} onChange={onChange} placeholder="Pesan tambahan untuk WA..." className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
           </div>
         </div>
         <div className="p-4 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-2">
@@ -240,4 +286,9 @@ function OrderModal({ editing, products, onClose, onSaved }: { editing: Order | 
       </div>
     </div>
   );
+}
+
+function productNameFromId(products: Product[], id: string) {
+  const p = products.find(x => x.id === id);
+  return p?.name || '-';
 }

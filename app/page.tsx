@@ -1,32 +1,40 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Wallet, ArrowRight } from 'lucide-react';
+import { Wallet, ArrowRight, Search } from 'lucide-react';
 import Link from 'next/link';
+import { supabase, getCurrentUser } from '@/lib/supabaseClient';
 
 export default function Home() {
   const router = useRouter();
+  const [tracking, setTracking] = useState('');
+  const [result, setResult] = useState<any | null>(null);
+  const [checking, setChecking] = useState(false);
 
   useEffect(() => {
-    // Check if user is logged in
     const checkAuth = async () => {
-      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-      const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-      
-      if (supabaseUrl && supabaseAnonKey) {
-        const { createClient } = await import('@supabase/supabase-js');
-        const supabase = createClient(supabaseUrl, supabaseAnonKey);
-        const { data: { session } } = await supabase.auth.getSession();
-        
-        if (session) {
-          router.push('/dashboard');
-        }
-      }
+      await getCurrentUser();
     };
-    
     checkAuth();
   }, [router]);
+
+  const checkTracking = async () => {
+    const input = tracking.trim();
+    if (!input) return;
+    setChecking(true);
+    setResult(null);
+    const { data, error } = await supabase.rpc('public_get_order_by_tracking', { p_tracking: input });
+    if (error) {
+      console.error('Tracking RPC error', error);
+      setResult({ notFound: true });
+    } else if (data && data.length > 0) {
+      setResult(data[0]);
+    } else {
+      setResult({ notFound: true });
+    }
+    setChecking(false);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
@@ -51,65 +59,61 @@ export default function Home() {
         </nav>
 
         {/* Hero Section */}
-        <div className="text-center mb-16">
+        <div className="text-center mb-10">
           <h1 className="text-5xl font-bold text-gray-900 dark:text-white mb-4">
             Kelola Keuangan Anda dengan Mudah
           </h1>
           <p className="text-xl text-gray-600 dark:text-gray-400 mb-8 max-w-2xl mx-auto">
             Aplikasi pengelola keuangan yang membantu Anda mencatat pemasukan, pengeluaran, hutang, dan piutang secara real-time.
           </p>
-          <div className="flex justify-center space-x-4">
-            <Link
-              href="/register"
-              className="flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-lg font-medium"
-            >
-              Mulai Sekarang
-              <ArrowRight className="ml-2 h-5 w-5" />
-            </Link>
-            <Link
-              href="/login"
-              className="px-6 py-3 bg-white text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-lg font-medium border border-gray-300"
-            >
-              Login
-            </Link>
+        </div>
+
+        {/* Public Tracking */}
+        <div className="max-w-2xl mx-auto bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6 mb-12">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Cek Resi Pesanan</h2>
+          <div className="flex gap-3">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+              <input
+                value={tracking}
+                onChange={(e) => setTracking(e.target.value)}
+                placeholder="Masukkan nomor resi"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none"
+              />
+            </div>
+            <button onClick={checkTracking} disabled={checking} className="px-4 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700 disabled:opacity-50">Cek Resi</button>
+          </div>
+          <div className="mt-4">
+            {checking && <p className="text-gray-600 dark:text-gray-400">Memeriksa...</p>}
+            {result?.notFound && <p className="text-red-600">Nomor resi tidak ditemukan.</p>}
+            {result && !result.notFound && (
+              <div className="text-sm text-gray-800 dark:text-gray-200 space-y-1">
+                <p><strong>Resi:</strong> {result.tracking_number}</p>
+                <p><strong>Nama:</strong> {result.customer_name}</p>
+                <p><strong>Produk:</strong> {result.product_name}</p>
+                <p><strong>Jumlah:</strong> {result.quantity}</p>
+                <p><strong>Status:</strong> {result.status}</p>
+                <p><strong>Diperbarui:</strong> {new Date(result.updated_at).toLocaleString('id-ID')}</p>
+              </div>
+            )}
           </div>
         </div>
 
-        {/* Features */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-16">
-          <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-            <div className="text-blue-600 dark:text-blue-400 mb-4">
-              <Wallet className="h-12 w-12" />
-            </div>
-            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Transaksi Real-time</h3>
-            <p className="text-gray-600 dark:text-gray-400">
-              Catat semua transaksi Anda secara langsung dengan data yang tersimpan aman di cloud.
-            </p>
-          </div>
-
-          <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-            <div className="text-green-600 dark:text-green-400 mb-4">
-              <svg className="h-12 w-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-              </svg>
-            </div>
-            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Dashboard Visual</h3>
-            <p className="text-gray-600 dark:text-gray-400">
-              Lihat ringkasan keuangan Anda dengan grafik interaktif dan statistik yang mudah dipahami.
-            </p>
-          </div>
-
-          <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-            <div className="text-orange-600 dark:text-orange-400 mb-4">
-              <svg className="h-12 w-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-              </svg>
-            </div>
-            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Data Aman</h3>
-            <p className="text-gray-600 dark:text-gray-400">
-              Data Anda dilindungi dengan enkripsi dan setiap user memiliki isolasi data sendiri.
-            </p>
-          </div>
+        {/* CTA */}
+        <div className="flex justify-center space-x-4">
+          <Link
+            href="/register"
+            className="flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-lg font-medium"
+          >
+            Mulai Sekarang
+            <ArrowRight className="ml-2 h-5 w-5" />
+          </Link>
+          <Link
+            href="/login"
+            className="px-6 py-3 bg-white text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-lg font-medium border border-gray-300"
+          >
+            Login
+          </Link>
         </div>
       </div>
     </div>

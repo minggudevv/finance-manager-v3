@@ -194,7 +194,7 @@ export default function DashboardPage() {
                   cx="50%"
                   cy="50%"
                   labelLine={false}
-                  label={({ name, value }) => `${name}: ${formatMoney(value)}`}
+                  label={({ name, value }) => `${name}: ${formatMoney(value as number)}`}
                   outerRadius={80}
                   fill="#8884d8"
                   dataKey="value"
@@ -203,7 +203,7 @@ export default function DashboardPage() {
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
-                <Tooltip formatter={(value) => formatMoney(value as number)} />
+                <Tooltip formatter={(value) => formatMoney(Number(value))} />
               </PieChart>
             </ResponsiveContainer>
           </div>
@@ -216,7 +216,7 @@ export default function DashboardPage() {
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="month" />
                 <YAxis />
-                <Tooltip formatter={(value) => formatMoney(value as number)} />
+                <Tooltip formatter={(value) => formatMoney(Number(value))} />
                 <Legend />
                 <Bar dataKey="income" fill="#10b981" name="Pemasukan" />
                 <Bar dataKey="expense" fill="#ef4444" name="Pengeluaran" />

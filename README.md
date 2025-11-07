@@ -1,127 +1,155 @@
 # 💼 Finance Manager
 
-Aplikasi pengelola keuangan berbasis web yang dibangun dengan Next.js dan Supabase. Memungkinkan Anda mencatat pemasukan, pengeluaran, hutang, dan piutang secara real-time dengan visualisasi data yang interaktif.
+A web-based financial management application built with Next.js and Supabase. It allows you to record income, expenses, debts, and receivables in real-time with interactive data visualization.
 
-## ✨ Fitur
+## ✨ Features
 
-- 🔐 **Authentication** - Login dan Register menggunakan Supabase Auth
-- 📊 **Dashboard** - Ringkasan keuangan dengan grafik visual
-- 💰 **Transaksi** - Kelola pemasukan, pengeluaran, hutang, dan piutang
-- 📈 **Grafik** - Visualisasi data dengan Recharts (Pie Chart & Bar Chart)
-- 🔍 **Pencarian & Filter** - Cari dan filter transaksi dengan mudah
-- 📄 **Laporan** - Export data ke CSV untuk analisis lebih lanjut
-- 🔒 **Keamanan** - Row Level Security (RLS) untuk isolasi data per user
-- 📱 **Responsif** - Dapat diakses dari desktop dan mobile
+- 🔐 **Authentication** - Login and Register using Supabase Auth
+- 📊 **Dashboard** - Financial summary with visual charts
+- 💰 **Transactions** - Manage income, expenses, debts, and receivables
+- 📈 **Charts** - Data visualization with Recharts (Pie Chart & Bar Chart)
+- 🔍 **Search & Filter** - Easily search and filter transactions
+- 📄 **Reporting** - Export data to CSV for further analysis
+- 🔒 **Security** - Row Level Security (RLS) for per-user data isolation
+- 📱 **Responsive** - Accessible from desktop and mobile devices
+- 🔄 **Auto Update** - Automatic application update system
+- 📦 **Version Control** - Database schema version management
 
-## 🚀 Instalasi
+## 🚀 Installation
 
-### Prasyarat
+### Prerequisites
 
-- Node.js 18+ dan npm
-- Akun Supabase ([https://supabase.com](https://supabase.com))
+- Node.js 18+ and npm
+- Supabase account ([https://supabase.com](https://supabase.com))
 
-### Langkah 1: Clone Repository
+### Step 1: Clone Repository
 
 ```bash
 git clone <repository-url>
 cd finance-manager-v3
 ```
 
-### Langkah 2: Install Dependencies
+### Step 2: Install Dependencies
 
 ```bash
 npm install
 ```
 
-### Langkah 3: Setup Supabase
+### Step 3: Setup Supabase
 
-1. Buat project baru di [Supabase Dashboard](https://supabase.com/dashboard)
-2. Ambil **API URL** dan **Anon Key** dari Settings > API
-3. Jalankan SQL scripts di folder `sql/`:
-   - Buka SQL Editor di Supabase Dashboard
-   - Jalankan `sql/01_tables.sql` untuk membuat tabel dan policies
-   - Jalankan `sql/02_views.sql` untuk membuat view dashboard
-   - Jalankan `sql/03_functions.sql` untuk membuat helper functions
+1. Create a new project at [Supabase Dashboard](https://supabase.com/dashboard)
+2. Get your **API URL** and **Anon Key** from Settings > API
+3. Run SQL scripts in the `database_stable/` folder:
+   - Open SQL Editor in Supabase Dashboard
+   - Run `database_stable\v1.0.0.sql` to create tables, views, and functions
+   - Or run each SQL file sequentially if needed
 
-### Langkah 4: Setup Environment Variables
+### Step 4: Setup Environment Variables
 
-1. Copy file `.env.local.example` menjadi `.env.local`
-2. Isi dengan kredensial Supabase Anda:
+1. Copy `.env.local.example` file to `.env.local`
+2. Fill in your Supabase credentials:
 
 ```env
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_url_here
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key_here
 ```
 
-### Langkah 5: Jalankan Development Server
+### Step 5: Run Development Server
 
 ```bash
 npm run dev
 ```
 
-Buka [http://localhost:3000](http://localhost:3000) di browser Anda.
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-## 📁 Struktur Project
+## 📦 Version Information
+
+**Current Application Version:** 1.0.0  
+**Current Database Version:** 1.0.0
+
+### Version Management
+- Application version is defined in `package.json`
+- Database schema versions are stored in `database_stable/` directory
+- Database changes are managed through versioned SQL files
+
+## 📁 Project Structure
 
 ```
 finance-manager-v3/
 ├── app/                    # Next.js app directory
 │   ├── dashboard/         # Dashboard page
-│   ├── transactions/      # Transaksi page
-│   ├── report/           # Laporan page
+│   ├── transactions/      # Transactions page
+│   ├── report/           # Report page
 │   ├── login/            # Login page
 │   └── register/         # Register page
 ├── components/            # Reusable components
 │   ├── Navbar.tsx
 │   ├── Card.tsx
-│   └── TransactionModal.tsx
+│   ├── TransactionModal.tsx
+│   └── MobileNav.tsx
 ├── lib/                  # Library configurations
 │   └── supabaseClient.ts
 ├── utils/                # Utility functions
 │   └── formatters.ts
-├── sql/                  # Database schema
-│   ├── 01_tables.sql
-│   ├── 02_views.sql
-│   └── 03_functions.sql
+├── database_stable/      # Versioned database schema
+│   ├── v1.0.0.sql       # Initial stable schema
+│   ├── version_control.md
+│   └── migration_template.sql
+├── features/             # Feature flags and update management
+│   └── update-manager/
 └── middleware.ts         # Route protection
 ```
 
 ## 🗄️ Database Schema
 
+### Version Management
+- Stable database schema is located in `database_stable/` directory
+- Each version follows semantic versioning (vX.Y.Z format)
+- Migration scripts are provided for schema updates
+
 ### Tables
 
 #### profiles
-Menyimpan informasi profil user
+Stores user profile information
 
 #### transactions
-Menyimpan semua transaksi keuangan
+Stores all financial transactions
 
 **Types:**
-- `income` - Pemasukan
-- `expense` - Pengeluaran  
-- `debt` - Hutang
-- `receivable` - Piutang
+- `income` - Income
+- `expense` - Expense  
+- `debt` - Debt
+- `receivable` - Receivable
 
 ### Views
 
 #### dashboard_summary
-View untuk menampilkan ringkasan total per user:
+View to display summary totals per user:
 - total_income
 - total_expense
 - total_debt
 - total_receivable
 - net_balance
 
-## 🔒 Keamanan
+## 🔒 Security
 
-Aplikasi menggunakan **Row Level Security (RLS)** untuk memastikan:
-- User hanya bisa mengakses data miliknya sendiri
-- Setiap tabel memiliki policies yang membatasi akses berdasarkan user_id
-- Auth session diverifikasi untuk setiap request
+The application uses **Row Level Security (RLS)** to ensure:
+- Users can only access their own data
+- Each table has policies limiting access based on user_id
+- Auth session is verified for every request
 
-## 📦 Teknologi yang Digunakan
+## 🔄 Update System
 
-- **Next.js 16** - React framework dengan App Router
+The application includes an automatic update system that allows administrators to update the application through the dashboard. The system includes:
+
+- Version tracking
+- Update notifications
+- Automated update process
+- Rollback capabilities
+
+## 📦 Technologies Used
+
+- **Next.js 16** - React framework with App Router
 - **TypeScript** - Type safety
 - **Tailwind CSS** - Styling
 - **Supabase** - Backend (Auth & Database)
@@ -132,22 +160,22 @@ Aplikasi menggunakan **Row Level Security (RLS)** untuk memastikan:
 
 ## 🚀 Deployment
 
-### Deploy ke Vercel
+### Deploy to Vercel
 
-1. Push code ke GitHub
-2. Import project di [Vercel](https://vercel.com)
-3. Tambahkan environment variables:
+1. Push code to GitHub
+2. Import project at [Vercel](https://vercel.com)
+3. Add environment variables:
    - `NEXT_PUBLIC_SUPABASE_URL`
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 4. Deploy!
 
-## 📝 Lisensi
+## 📝 License
 
 MIT License
 
 ## 👨‍💻 Development
 
-### Menjalankan Scripts
+### Running Scripts
 
 ```bash
 # Development mode
@@ -166,21 +194,21 @@ npm run lint
 ## 🐛 Troubleshooting
 
 ### Error: "Missing Supabase environment variables"
-- Pastikan file `.env.local` sudah dibuat dan diisi dengan benar
-- Restart development server setelah mengubah environment variables
+- Ensure `.env.local` file is created and properly filled
+- Restart development server after changing environment variables
 
 ### Error: "Row Level Security policy violation"
-- Pastikan SQL scripts sudah dijalankan di Supabase
-- Cek apakah policies sudah dibuat dengan benar
+- Make sure SQL scripts have been executed in Supabase
+- Check if policies are created correctly
 
-### Grafik tidak muncul
-- Pastikan data transaksi sudah ada di database
-- Cek console untuk error pada Recharts
+### Charts not showing
+- Ensure transaction data exists in the database
+- Check console for errors from Recharts
 
 ## 📞 Support
 
-Jika mengalami masalah, silakan buka issue di repository ini.
+If you encounter problems, please open an issue in this repository.
 
 ---
 
-Dibuat dengan ❤️ menggunakan Next.js dan Supabase
+Built with ❤️ using Next.js and Supabase

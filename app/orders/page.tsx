@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Navbar from '@/components/Navbar';
 import Sidebar from '@/components/Sidebar';
+import MobileNav from '@/components/MobileNav';
 import { Plus, Edit, Trash2, Truck, Save } from 'lucide-react';
 import { supabase, getCurrentUser } from '@/lib/supabaseClient';
 import toast from 'react-hot-toast';
@@ -87,19 +88,20 @@ export default function OrdersPage() {
   
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <Navbar />
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pb-16 md:pb-0">
       <div className="flex">
-        <Sidebar />
-        <div className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="mb-8 flex justify-between items-center">
+        <div className="hidden md:block">
+          <Sidebar />
+        </div>
+        <main className="flex-1 max-w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Pesanan</h1>
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">Pesanan</h1>
               <p className="mt-2 text-gray-600 dark:text-gray-400">Kelola pesanan pelanggan</p>
             </div>
             <button
               onClick={() => { setEditing(null); setIsModalOpen(true); }}
-              className="flex items-center px-4 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700 transition-colors"
+              className="flex items-center px-4 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700 transition-colors w-full sm:w-auto"
             >
               <Plus className="h-5 w-5 mr-2" />
               Tambah Pesanan
@@ -154,8 +156,9 @@ export default function OrdersPage() {
           </div>
 
           {isModalOpen && <OrderModal editing={editing} products={products} onClose={() => setIsModalOpen(false)} onSaved={() => { setIsModalOpen(false); loadOrders(); }} />}
-        </div>
+        </main>
       </div>
+      <MobileNav />
     </div>
   );
 }
@@ -224,7 +227,7 @@ function OrderModal({ editing, products, onClose, onSaved }: { editing: Order | 
 
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-      <div className="bg-white dark:bg-gray-800 rounded-lg w-full max-w-lg border border-gray-200 dark:border-gray-700">
+      <div className="bg-white dark:bg-gray-800 rounded-lg w-full max-w-full sm:max-w-lg border border-gray-200 dark:border-gray-700 max-h-[90vh] overflow-y-auto">
         <div className="p-4 border-b border-gray-200 dark:border-gray-700 font-semibold text-gray-900 dark:text-white">{editing ? 'Edit Pesanan' : 'Tambah Pesanan'}</div>
         <div className="p-4 space-y-4">
           <div>
@@ -234,7 +237,7 @@ function OrderModal({ editing, products, onClose, onSaved }: { editing: Order | 
               {products.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
             </select>
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">Jumlah</label>
               <input name="quantity" type="number" min={1} value={form.quantity} onChange={onChange} className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
@@ -253,16 +256,16 @@ function OrderModal({ editing, products, onClose, onSaved }: { editing: Order | 
             <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">Nama Pelanggan</label>
             <input name="customer_name" value={form.customer_name} onChange={onChange} className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">No. Telepon</label>
               <input name="customer_phone" value={form.customer_phone} onChange={onChange} className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
             </div>
             <div>
               <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">No. Resi</label>
-              <div className="flex gap-2">
+              <div className="flex flex-col sm:flex-row gap-2">
                 <input name="tracking_number" value={form.tracking_number} onChange={onChange} className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
-                <button type="button" onClick={() => setForm((prev) => ({ ...prev, tracking_number: genTracking() }))} className="px-3 py-2 text-xs rounded bg-pink-600 text-white hover:bg-pink-700">Generate</button>
+                <button type="button" onClick={() => setForm((prev) => ({ ...prev, tracking_number: genTracking() }))} className="px-3 py-2 text-xs rounded bg-pink-600 text-white hover:bg-pink-700 sm:mt-0">Generate</button>
               </div>
             </div>
           </div>
@@ -279,9 +282,9 @@ function OrderModal({ editing, products, onClose, onSaved }: { editing: Order | 
             <textarea name="wa_note" value={form.wa_note} onChange={onChange} placeholder="Pesan tambahan untuk WA..." className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
           </div>
         </div>
-        <div className="p-4 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-2">
+        <div className="p-4 border-t border-gray-200 dark:border-gray-700 flex flex-col sm:flex-row justify-end gap-2">
           <button onClick={onClose} className="px-4 py-2 rounded bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300">Batal</button>
-          <button onClick={onSubmit} disabled={saving} className="px-4 py-2 rounded bg-pink-600 text-white hover:bg-pink-700 disabled:opacity-50 flex items-center gap-2"><Save className="h-4 w-4"/>Simpan</button>
+          <button onClick={onSubmit} disabled={saving} className="px-4 py-2 rounded bg-pink-600 text-white hover:bg-pink-700 disabled:opacity-50 flex items-center justify-center gap-2"><Save className="h-4 w-4"/>Simpan</button>
         </div>
       </div>
     </div>

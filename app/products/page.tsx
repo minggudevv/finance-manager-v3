@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Navbar from '@/components/Navbar';
 import Sidebar from '@/components/Sidebar';
+import MobileNav from '@/components/MobileNav';
 import { Plus, Edit, Trash2 } from 'lucide-react';
 import { supabase, getCurrentUser } from '@/lib/supabaseClient';
 import toast from 'react-hot-toast';
@@ -59,19 +60,20 @@ export default function ProductsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <Navbar />
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pb-16 md:pb-0">
       <div className="flex">
-        <Sidebar />
-        <div className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="mb-8 flex justify-between items-center">
+        <div className="hidden md:block">
+          <Sidebar />
+        </div>
+        <main className="flex-1 max-w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Produk</h1>
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">Produk</h1>
               <p className="mt-2 text-gray-600 dark:text-gray-400">Kelola daftar produk Anda</p>
             </div>
             <button
               onClick={() => { setEditing(null); setIsModalOpen(true); }}
-              className="flex items-center px-4 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700 transition-colors"
+              className="flex items-center px-4 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700 transition-colors w-full sm:w-auto"
             >
               <Plus className="h-5 w-5 mr-2" />
               Tambah Produk
@@ -117,8 +119,9 @@ export default function ProductsPage() {
           </div>
 
           {isModalOpen && <ProductModal editing={editing} onClose={() => setIsModalOpen(false)} onSaved={() => { setIsModalOpen(false); loadProducts(); }} />}
-        </div>
+        </main>
       </div>
+      <MobileNav />
     </div>
   );
 }
@@ -166,7 +169,7 @@ function ProductModal({ editing, onClose, onSaved }: { editing: Product | null; 
 
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-      <div className="bg-white dark:bg-gray-800 rounded-lg w-full max-w-lg border border-gray-200 dark:border-gray-700">
+      <div className="bg-white dark:bg-gray-800 rounded-lg w-full max-w-full sm:max-w-lg border border-gray-200 dark:border-gray-700 max-h-[90vh] overflow-y-auto">
         <div className="p-4 border-b border-gray-200 dark:border-gray-700 font-semibold text-gray-900 dark:text-white">{editing ? 'Edit Produk' : 'Tambah Produk'}</div>
         <div className="p-4 space-y-4">
           <div>
@@ -177,7 +180,7 @@ function ProductModal({ editing, onClose, onSaved }: { editing: Product | null; 
             <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">Kategori</label>
             <input name="category" value={form.category} onChange={onChange} className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">Harga</label>
               <input name="price" type="number" value={form.price} onChange={onChange} className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
@@ -192,7 +195,7 @@ function ProductModal({ editing, onClose, onSaved }: { editing: Product | null; 
             <textarea name="description" value={form.description} onChange={onChange} className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
           </div>
         </div>
-        <div className="p-4 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-2">
+        <div className="p-4 border-t border-gray-200 dark:border-gray-700 flex flex-col sm:flex-row justify-end gap-2">
           <button onClick={onClose} className="px-4 py-2 rounded bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300">Batal</button>
           <button onClick={onSubmit} disabled={saving} className="px-4 py-2 rounded bg-pink-600 text-white hover:bg-pink-700 disabled:opacity-50">Simpan</button>
         </div>

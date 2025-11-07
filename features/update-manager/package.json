@@ -1,0 +1,16 @@
+{
+  "name": "@finance-manager/update-system",
+  "version": "1.0.0",
+  "description": "Update management system for Finance Manager application",
+  "main": "update-service.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "finance-manager",
+    "update-system",
+    "versioning"
+  ],
+  "author": "Finance Manager Team",
+  "license": "MIT"
+}

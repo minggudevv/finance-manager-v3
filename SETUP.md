@@ -1,6 +1,6 @@
 # 🚀 Setup Guide - Finance Manager
 
-## Langkah-langkah Setup
+## Setup Steps
 
 ### 1. Install Dependencies
 ```bash
@@ -9,117 +9,121 @@ npm install
 
 ### 2. Setup Supabase
 
-#### A. Buat Project di Supabase
-1. Buka [https://supabase.com](https://supabase.com) dan daftar/login
-2. Klik "New Project"
-3. Isi nama project dan database password
-4. Pilih region terdekat
-5. Tunggu project selesai dibuat
+#### A. Create Project in Supabase
+1. Visit [https://supabase.com](https://supabase.com) and sign up/login
+2. Click "New Project"
+3. Fill in project name and database password
+4. Select the nearest region
+5. Wait for project to be created
 
-#### B. Jalankan SQL Scripts
-1. Di Supabase Dashboard, klik "SQL Editor"
-2. Jalankan scripts berikut secara berurutan:
-   - Copy isi dari `sql/01_tables.sql` → Run
-   - Copy isi dari `sql/02_views.sql` → Run
-   - Copy isi dari `sql/03_functions.sql` → Run
+#### B. Run SQL Scripts
+1. In Supabase Dashboard, click "SQL Editor"
+2. Run the following scripts in sequence:
+   - Copy content from `database_stable\v1.0.0.sql` → Run
+   - Or run each SQL file from the `sql/` directory sequentially if needed
 
-#### C. Ambil API Credentials
-1. Di Supabase Dashboard, klik "Settings" (kiri bawah)
-2. Klik "API"
+#### C. Get API Credentials
+1. In Supabase Dashboard, click "Settings" (bottom left)
+2. Click "API"
 3. Copy:
-   - `Project URL` (untuk NEXT_PUBLIC_SUPABASE_URL)
-   - `anon public` key (untuk NEXT_PUBLIC_SUPABASE_ANON_KEY)
+   - `Project URL` (for NEXT_PUBLIC_SUPABASE_URL)
+   - `anon public` key (for NEXT_PUBLIC_SUPABASE_ANON_KEY)
 
 ### 3. Setup Environment Variables
 
-Buat file `.env.local` di root project:
+Create a `.env.local` file in the project root:
 
 ```env
 NEXT_PUBLIC_SUPABASE_URL=https://xxxxx.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key-here
 ```
 
-**Catatan:** File `.env.local` sudah ada di `.gitignore`, jadi tidak akan ter-commit.
+**Note:** The `.env.local` file is already in `.gitignore`, so it will not be committed.
 
-### 4. Jalankan Development Server
+### 4. Run Development Server
 
 ```bash
 npm run dev
 ```
 
-Buka browser di [http://localhost:3000](http://localhost:3000)
+Open browser at [http://localhost:3000](http://localhost:3000)
 
-### 5. Daftar Akun Baru
+### 5. Create New Account
 
-1. Klik tombol "Daftar" di homepage
-2. Isi:
-   - Nama Lengkap
+1. Click the "Register" button on homepage
+2. Fill in:
+   - Full Name
    - Email
-   - Password (min. 6 karakter)
-   - Konfirmasi Password
+   - Password (min. 6 characters)
+   - Confirm Password
 3. Submit form
-4. Redirect ke halaman login
-5. Login dengan email dan password yang baru dibuat
+4. Redirect to login page
+5. Login with the newly created email and password
 
-### 6. Mulai Menggunakan
+### 6. Start Using
 
-Setelah login, Anda akan diarahkan ke Dashboard. Fitur yang tersedia:
-- ✅ Dashboard dengan grafik dan ringkasan
-- ✅ Transaksi (tambah, edit, hapus)
-- ✅ Laporan (lihat dan export CSV)
+After login, you will be redirected to Dashboard. Available features:
+- ✅ Dashboard with charts and summary
+- ✅ Transactions (add, edit, delete)
+- ✅ Products & Orders
+- ✅ Reports (view and export to CSV)
+- ✅ Responsive mobile navigation
+- ✅ Version management system
 
-## 🔒 Keamanan Data
+## 🔒 Data Security
 
-Aplikasi menggunakan **Row Level Security (RLS)** di Supabase:
-- Setiap user hanya bisa melihat data miliknya sendiri
-- Policies sudah dikonfigurasi di SQL scripts
-- Session management otomatis oleh Supabase
+The application uses **Row Level Security (RLS)** in Supabase:
+- Each user can only view their own data
+- Policies are configured in SQL scripts
+- Session management is handled automatically by Supabase
 
-## 📁 File Penting
+## 📁 Important Files
 
-- `.env.local` - Environment variables (JANGAN commit)
-- `sql/` - Database schema
+- `.env.local` - Environment variables (DO NOT commit)
+- `database_stable/` - Versioned database schema
 - `app/` - Next.js pages
 - `components/` - Reusable components
 - `lib/` - Supabase client
 - `utils/` - Helper functions
+- `features/update-manager/` - Update management system
 
 ## 🐛 Troubleshooting
 
 ### Error: Missing Supabase environment variables
-**Solusi:** Pastikan file `.env.local` sudah dibuat dan diisi dengan benar. Restart dev server.
+**Solution:** Make sure the `.env.local` file is created and filled correctly. Restart dev server.
 
 ### Error: Authentication failed
-**Solusi:** Pastikan email dan password sudah benar. Cek juga di Supabase Dashboard → Authentication → Users.
+**Solution:** Verify that email and password are correct. Also check in Supabase Dashboard → Authentication → Users.
 
 ### Error: Policy violation
-**Solusi:** Pastikan SQL scripts sudah dijalankan. Cek di Supabase → Table Editor bahwa policies ada.
+**Solution:** Ensure SQL scripts have been executed. Check in Supabase → Table Editor that policies exist.
 
-### Database tidak ditemukan
-**Solusi:** Pastikan SQL scripts sudah dijalankan. Pastikan tidak ada error saat running SQL.
+### Database not found
+**Solution:** Make sure SQL scripts have been executed. Ensure no errors occurred while running SQL.
 
 ## ✨ Tips
 
-1. **Lokasi Data:** Semua data disimpan di Supabase cloud database
-2. **Backup:** Supabase otomatis backup database Anda
-3. **Monitoring:** Gunakan Supabase Dashboard untuk monitoring data
-4. **API:** Anda bisa access data via REST API atau GraphQL
+1. **Data Location:** All data is stored in the Supabase cloud database
+2. **Backup:** Supabase automatically backs up your database
+3. **Monitoring:** Use Supabase Dashboard for data monitoring
+4. **API:** You can access data via REST API or GraphQL
+5. **Versioning:** Database schemas are version controlled in the `database_stable/` directory
 
-## 🚀 Deploy ke Production
+## 🚀 Deploy to Production
 
-### Deploy ke Vercel (Recommended)
+### Deploy to Vercel (Recommended)
 
-1. Push code ke GitHub
-2. Buka [vercel.com](https://vercel.com)
-3. Import project dari GitHub
-4. Tambahkan environment variables di Vercel:
+1. Push code to GitHub
+2. Visit [vercel.com](https://vercel.com)
+3. Import project from GitHub
+4. Add environment variables in Vercel:
    - `NEXT_PUBLIC_SUPABASE_URL`
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 5. Deploy!
 
-Project Anda akan live di `https://your-project.vercel.app`
+Your project will be live at `https://your-project.vercel.app`
 
 ---
 
-**Selamat! Aplikasi Finance Manager Anda siap digunakan.** 💼✨
+**Congratulations! Your Finance Manager application is ready to use.** 💼✨
 

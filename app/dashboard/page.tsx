@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Wallet, TrendingUp, TrendingDown, ArrowUpRight, ArrowDownRight } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Sidebar from '@/components/Sidebar';
+import MobileNav from '@/components/MobileNav';
 import Card from '@/components/Card';
 import { supabase, getCurrentUser } from '@/lib/supabaseClient';
 import { formatMoney } from '@/utils/formatters';
@@ -111,12 +112,11 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <Navbar />
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
         <div className="flex items-center justify-center h-96">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-            <p className="mt-4 text-gray-600">Memuat data...</p>
+            <p className="mt-4 text-gray-600 dark:text-gray-400">Memuat data...</p>
           </div>
         </div>
       </div>
@@ -129,103 +129,105 @@ export default function DashboardPage() {
   ] : [];
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <Navbar />
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pb-16 md:pb-0">
       <div className="flex">
-        <Sidebar />
-        <div className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Dashboard</h1>
-          <p className="mt-2 text-gray-600 dark:text-gray-400">Ringkasan keuangan Anda</p>
+        <div className="hidden md:block">
+          <Sidebar />
         </div>
+        <main className="flex-1 max-w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="mb-8">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">Dashboard</h1>
+            <p className="mt-2 text-gray-600 dark:text-gray-400">Ringkasan keuangan Anda</p>
+          </div>
 
-        {/* Summary Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <Card
-            title="Total Pemasukan"
-            value={formatMoney(summary?.total_income || 0)}
-            icon={<TrendingUp className="h-8 w-8" />}
-            className="income"
-          />
-          <Card
-            title="Total Pengeluaran"
-            value={formatMoney(summary?.total_expense || 0)}
-            icon={<TrendingDown className="h-8 w-8" />}
-            className="expense"
-          />
-          <Card
-            title="Total Hutang"
-            value={formatMoney(summary?.total_debt || 0)}
-            icon={<ArrowDownRight className="h-8 w-8" />}
-            className="debt"
-          />
-          <Card
-            title="Total Piutang"
-            value={formatMoney(summary?.total_receivable || 0)}
-            icon={<ArrowUpRight className="h-8 w-8" />}
-            className="receivable"
-          />
-        </div>
+          {/* Summary Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8">
+            <Card
+              title="Total Pemasukan"
+              value={formatMoney(summary?.total_income || 0)}
+              icon={<TrendingUp className="h-8 w-8" />}
+              className="income"
+            />
+            <Card
+              title="Total Pengeluaran"
+              value={formatMoney(summary?.total_expense || 0)}
+              icon={<TrendingDown className="h-8 w-8" />}
+              className="expense"
+            />
+            <Card
+              title="Total Hutang"
+              value={formatMoney(summary?.total_debt || 0)}
+              icon={<ArrowDownRight className="h-8 w-8" />}
+              className="debt"
+            />
+            <Card
+              title="Total Piutang"
+              value={formatMoney(summary?.total_receivable || 0)}
+              icon={<ArrowUpRight className="h-8 w-8" />}
+              className="receivable"
+            />
+          </div>
 
-        {/* Net Balance */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-8">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Saldo Bersih</h2>
-              <p className="text-sm text-gray-600 dark:text-gray-400">Pemasukan - Pengeluaran</p>
+          {/* Net Balance */}
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 sm:p-6 mb-8">
+            <div className="flex flex-col sm:flex-row items-center justify-between">
+              <div className="text-center sm:text-left mb-4 sm:mb-0">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Saldo Bersih</h2>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Pemasukan - Pengeluaran</p>
+              </div>
+              <div className="text-center">
+                <p className={`text-2xl sm:text-3xl font-bold ${summary && summary.net_balance >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                  {formatMoney(summary?.net_balance || 0)}
+                </p>
+              </div>
             </div>
-            <div className="text-right">
-              <p className={`text-3xl font-bold ${summary && summary.net_balance >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-                {formatMoney(summary?.net_balance || 0)}
-              </p>
+          </div>
+
+          {/* Charts */}
+          <div className="grid grid-cols-1 gap-6">
+            {/* Pie Chart */}
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 sm:p-6">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Perbandingan Pemasukan & Pengeluaran</h3>
+              <ResponsiveContainer width="100%" height={300}>
+                <PieChart>
+                  <Pie
+                    data={pieData}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={({ name, value }) => `${name}: ${formatMoney(value as number)}`}
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="value"
+                  >
+                    {pieData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip formatter={(value) => formatMoney(Number(value))} />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+
+            {/* Bar Chart */}
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 sm:p-6">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Tren Bulanan</h3>
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={monthlyData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="month" />
+                  <YAxis />
+                  <Tooltip formatter={(value) => formatMoney(Number(value))} />
+                  <Legend />
+                  <Bar dataKey="income" fill="#10b981" name="Pemasukan" />
+                  <Bar dataKey="expense" fill="#ef4444" name="Pengeluaran" />
+                </BarChart>
+              </ResponsiveContainer>
             </div>
           </div>
-        </div>
-
-        {/* Charts */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Pie Chart */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Perbandingan Pemasukan & Pengeluaran</h3>
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
-                  data={pieData}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  label={({ name, value }) => `${name}: ${formatMoney(value as number)}`}
-                  outerRadius={80}
-                  fill="#8884d8"
-                  dataKey="value"
-                >
-                  {pieData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip formatter={(value) => formatMoney(Number(value))} />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-
-          {/* Bar Chart */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Tren Bulanan</h3>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={monthlyData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="month" />
-                <YAxis />
-                <Tooltip formatter={(value) => formatMoney(Number(value))} />
-                <Legend />
-                <Bar dataKey="income" fill="#10b981" name="Pemasukan" />
-                <Bar dataKey="expense" fill="#ef4444" name="Pengeluaran" />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
+        </main>
       </div>
-      </div>
+      <MobileNav />
     </div>
   );
 }

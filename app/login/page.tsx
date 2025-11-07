@@ -25,7 +25,7 @@ export default function LoginPage() {
       toast.success('Login berhasil!');
       router.push('/dashboard');
     } catch (error: any) {
-      toast.error(error.message || 'Login gagal');
+      toast.error(error instanceof Error ? error.message : 'Login gagal');
     } finally {
       setLoading(false);
     }
